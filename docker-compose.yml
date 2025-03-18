@@ -1,0 +1,44 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nestjs_app
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - DB_TYPE=mysql
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USERNAME=root
+      - DB_PASSWORD=motionlabs
+      - DB_DATABASE=motionlabs
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - db
+    networks:
+      - app-network
+
+  db:
+    image: mysql:8.0
+    container_name: mysql_db
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=motionlabs
+      - MYSQL_DATABASE=motionlabs
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - app-network
+volumes:
+  mysql_data:
+    name: mysql_data
+
+networks:
+  app-network:
+    driver: bridge
