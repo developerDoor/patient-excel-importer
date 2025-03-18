@@ -1,98 +1,54 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 환자 엑셀 데이터 관리 시스템
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## 프로젝트 설명
+환자 데이터를 담고있는 엑셀을 업로드해 데이터베이스에 저장 및 조회하는 프로젝트입니다. NestJS와 MySQL을 기반으로 작성되었습니다.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
-
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
-
-```bash
-$ npm install
+## 설치 및 실행 방법
+1. 해당 레포지토리를 Clone합니다.
+```
+https://github.com/developerDoor/patient-excel-importer.git
+cd patient-excel-importer
 ```
 
-## Compile and run the project
+2. Docker Compose를 사용해 프로젝트를 실행합니다
+```
+docker-compose up -d
+```
+해당 명령어로 MySQL과 NestJS가 동시에 실행됩니다.
 
-```bash
-# development
-$ npm run start
+## API 문서
+MySQL과 NestJS 프로세스가 정상적으로 실행됐다면 브라우저에서 http://localhost:3000/api-docs 로 접속하시면 Swagger 페이지로 이동하실 수 있습니다. 이 페이지에서 모든 API 엔드포인트를 확인하고 테스트할 수 있습니다.
 
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+### 엔드포인트 설명
+1. [POST] /patients/uploads 
+- 엑셀 파일에 있는 환자 정보를 데이터베이스에 등록합니다.
+- Request Body
+```
+    file(multipart/form-data)
 ```
 
-## Run tests
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+2. [GET] /patients
+- 환자 정보를 조회합니다.
+- URL query parameters:
+```
+   - page: 페이지 번호
+   - limit: 페이지당 항목 수
 ```
 
-## Deployment
+## 데이터베이스 스키마
+![스키마](img/스키마.png)
+## 성능최적화 방법
+### 메모리 기반 파일 처리
+- 클라이언트로부터 전달받은 엑셀 파일을 디스크에 쓰고 읽는 I/O 작업은 성능에 이슈를 발생시킴으로 해당 엑셀 파일을 디스크에 저장하지 않고 메모리 상 Buffer에 두고 작업했습니다.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### 인조키(auto increment) 사용
+- 이름, 전화번호, 차트번호를 복합키로 구성하게 될 경우 데이터 삽입 시 3개 필드의 고유성을 검사해야 함으로 성능 부정적입니다.
+- 별도의 식별자(id)를 두어 Update, Insert 성능을 향상시켰습니다.
+- 
+### 쿼리 수 최소화
+- DB에 쿼리를 날리는 것도 I/O 작업중 하나입니다.
+- 엑셀의 행들을 순회하는 for문 안에서 일일이 데이터를 삽입, 수정하는 것이 아닌 for문이 종료된 이후 한번에 bulk upsert를 통해 단 하나의 쿼리로 데이터를 삽입, 수정했습니다.
 
-```bash
-$ npm install -g mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+### 특수처리 로직 최적화
+- 데이터 저장 로직 중 '특수처리'에 관한 부분도 해당 예외가 발생했을 경우를 일일이 체크하는 것이 아닌 모든 수정, 삽입이 이뤄진 이후에 한번의 SELECT로 데이터를 조회하고, DELETE 하도록 작성했습니다.
