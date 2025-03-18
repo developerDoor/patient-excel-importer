@@ -12,12 +12,12 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiTags,
   ApiOperation,
-  ApiResponse,
   ApiBody,
-  ApiConsumes,
+  ApiConsumes, ApiCreatedResponse,
 } from '@nestjs/swagger';
 import { PatientModel } from './entities/patient.entity'
 import { PaginationDto, PaginatedResponseDto } from './dto/patient.dto';
+import { UploadExcelDtoResponse } from './dto/upload-excel.dto';
 
 @ApiTags('patients')
 @Controller('patients')
@@ -41,8 +41,9 @@ export class PatientsController {
       },
     },
   })
+  @ApiCreatedResponse({ description: '등록 성공', type: UploadExcelDtoResponse})
   @UseInterceptors(FileInterceptor('file'))
-  async uploadExcelFile(@UploadedFile() file: Express.Multer.File) {
+  async uploadExcelFile(@UploadedFile() file: Express.Multer.File): Promise<UploadExcelDtoResponse> {
     if (!file) {
       throw new BadRequestException('엑셀 파일이 필요합니다.');
     }
