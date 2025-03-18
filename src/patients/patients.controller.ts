@@ -53,7 +53,7 @@ export class PatientsController {
   }
 
   @Get()
-  @ApiResponse({ description: '조회 성공', type: [PatientModel]})
+  @ApiResponse({ description: '조회 성공', type: PaginatedResponseDto<PatientModel>})
   @ApiOperation({
     summary: '환자 조회 API',
     description: '환자 정보를 조회한다.',
