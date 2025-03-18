@@ -13,7 +13,7 @@ import {
   ApiTags,
   ApiOperation,
   ApiBody,
-  ApiConsumes, ApiCreatedResponse,
+  ApiConsumes, ApiCreatedResponse, ApiResponse,
 } from '@nestjs/swagger';
 import { PatientModel } from './entities/patient.entity'
 import { PaginationDto, PaginatedResponseDto } from './dto/patient.dto';
@@ -53,6 +53,7 @@ export class PatientsController {
   }
 
   @Get()
+  @ApiResponse({ description: '조회 성공', type: [PatientModel]})
   @ApiOperation({
     summary: '환자 조회 API',
     description: '환자 정보를 조회한다.',
