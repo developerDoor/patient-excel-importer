@@ -24,7 +24,7 @@ MySQL과 NestJS 프로세스가 정상적으로 실행됐다면 브라우저에�
 - 엑셀 파일에 있는 환자 정보를 데이터베이스에 등록합니다.
 - Request Body
 ```
-    file(multipart/form-data)
+    file(multipart/form-data): 엑셀 파일을 첨부하시면 됩니다.
 ```
 
 2. [GET] /patients
